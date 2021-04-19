@@ -1,0 +1,35 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<style>
+    #message-history li {
+        margin: 4px 12px;
+    }
+
+    .bubble {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 12px;
+    }
+    
+    .bubble.right {
+        background: #99e5ff;
+        float: right;
+    }
+    
+    .bubble.left {
+        background: lightgray;
+        float: left;
+    }
+
+    .bubble-timestamp {
+        font-size: 0.7em;
+        font-style: italic;
+    }
+</style>
+
+<input type="text" id="user-message" style="width:100%" placeholder="Please type the name of a country you would like to know about here." />
+<ul id="message-history" style="list-style-type: none; padding: 0; margin: 20px 0;"></ul>
