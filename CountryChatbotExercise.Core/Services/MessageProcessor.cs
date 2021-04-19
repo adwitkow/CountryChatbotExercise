@@ -1,4 +1,5 @@
 ﻿using CountryChatbotExercise.Core.Helpers;
+using CountryChatbotExercise.Core.Models;
 using CountryChatbotExercise.Core.Models.Country;
 using System;
 using System.Collections.Generic;
@@ -23,31 +24,63 @@ namespace CountryChatbotExercise.Core.Services
         /// <summary>
         /// Processes the message asynchronously.
         /// </summary>
-        /// <param name="body">The message body.</param>
+        /// <param name="userMessage">The user message.</param>
         /// <param name="newConversation">if set to <c>true</c>, starts the answer with a hearty 'Hello!'.</param>
         /// <returns>The answering message body.</returns>
-        public async Task<string> ProcessMessageAsync(string body, bool newConversation)
+        public async Task<Message> ProcessMessageAsync(Message userMessage, bool newConversation)
         {
+            var body = userMessage.Body;
+            var isGoodbye = userMessage.Body.ToLower().Contains("goodbye");
+
+            if (isGoodbye)
+            {
+                return CreateGoodbyeMessage();
+            }
+
             var words = Regex.Split(body, "\\W");
 
             var countryNames = await _restCountryProvider.GetCountryNamesAsync();
             var bestCountryName = CalculateBestCountryName(words, countryNames);
             var country = await _restCountryProvider.GetCountryAsync(bestCountryName);
 
+            string answerBody;
             if (country == null)
             {
-                return "I am sorry, I could not connect to the external data provider. Please try again later.";
+                answerBody = "I am sorry, I could not connect to the external data provider. Please try again later.";
             }
-
-            var sentence = GenerateSentence(country, 3);
-            var answer = $"Did you know that {country.Name}'s {sentence}?";
+            else
+            {
+                var sentence = GenerateSentence(country, 3);
+                answerBody = $"Did you know that {country.Name}'s {sentence}?";
+            }
 
             if (newConversation)
             {
-                answer = $"Hello! {answer}";
+                answerBody = $"Hello! {answerBody}";
             }
 
+            var answer = new Message()
+            {
+                ConversationId = userMessage.ConversationId,
+                Body = answerBody,
+                MessageType = MessageType.Bot,
+                Status = MessageStatus.Converse,
+                Timestamp = DateTime.Now
+            };
+
             return answer;
+        }
+
+        private Message CreateGoodbyeMessage()
+        {
+            return new Message()
+            {
+                Body = "Goodbye!",
+                ConversationId = null,
+                MessageType = MessageType.Bot,
+                Status = MessageStatus.End,
+                Timestamp = DateTime.Now
+            };
         }
 
         /// <summary>

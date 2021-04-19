@@ -36,56 +36,39 @@ namespace CountryChatbotExercise.Core.Services
         /// </returns>
         public async Task<Message> GenerateAnswerAsync(Message userMessage)
         {
-            // TODO: This method is ugly and confusing. It should be refactored.
             _logger.LogInformation("Received message: '{userMessage.Body}'", userMessage.Body);
 
-            int id;
-            var newConversation = false;
-            if (!userMessage.ConversationId.HasValue)
-            {
-                id = StartNewConversation();
-                userMessage.ConversationId = id;
+            var isNewConversation = AssignConversationId(userMessage);
+            var answer = await _messageProcessor.ProcessMessageAsync(userMessage, isNewConversation);
 
-                newConversation = true;
-            }
-            else
-            {
-                id = userMessage.ConversationId.Value;
-            }
+            var id = userMessage.ConversationId.Value;
 
-            var isGoodbye = userMessage.Body.ToLower().Contains("goodbye");
-
-            string answerBody;
-            if (isGoodbye)
+            if (answer.Status == MessageStatus.End)
             {
-                answerBody = "Goodbye!";
-            }
-            else
-            {
-                answerBody = await _messageProcessor.ProcessMessageAsync(userMessage.Body, newConversation);
-            }
-
-            var answer = new Message()
-            {
-                ConversationId = id,
-                MessageType = MessageType.Bot,
-                Timestamp = DateTime.Now,
-                Body = answerBody
-            };
-
-            if (isGoodbye)
-            {
-                answer.ConversationId = null;
                 EndConversation(id);
             }
             else
             {
-                Conversations[id].Messages.Add(answer);
+                var conversationHistory = Conversations[id].Messages;
+                conversationHistory.Add(userMessage);
+                conversationHistory.Add(answer);
             }
 
-            _logger.LogInformation("Replied with: '{answerBody}'", answerBody);
+            _logger.LogInformation("Replied with: '{answerBody}'", answer.Body);
 
             return answer;
+        }
+
+        private bool AssignConversationId(Message userMessage)
+        {
+            if (userMessage.ConversationId.HasValue)
+            {
+                return false;
+            }
+
+            var newId = StartNewConversation();
+            userMessage.ConversationId = newId;
+            return true;
         }
 
         /// <summary>

@@ -61,6 +61,7 @@
     <Compile Include="Models\Country\RegionalBloc.cs" />
     <Compile Include="Models\Country\RestCountry.cs" />
     <Compile Include="Models\Country\Translations.cs" />
+    <Compile Include="Models\MessageStatus.cs" />
     <Compile Include="Services\CountryChatbotService.cs" />
     <Compile Include="Models\Conversation.cs" />
     <Compile Include="Models\Message.cs" />
