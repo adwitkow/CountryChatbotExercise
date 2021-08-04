@@ -1,6 +1,6 @@
 # CountryChatbotExercise
 
-A small recruitment exercise regarding web development. Beware - during the development, corners were cut due to the lack of time.
+A small recruitment exercise regarding web development. Beware - during the development, corners were cut due to the lack of time and also due to the fact that I was learning ASP.NET MVC on the fly during that time as well.
 
 ## Requirements:
 1.	Frontend - Implement a simple chatbot interface that contains:
